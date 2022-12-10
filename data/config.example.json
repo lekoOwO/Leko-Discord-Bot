@@ -1,0 +1,10 @@
+{
+    "discord": {
+        "token": "",
+        "clientId": ""
+    },
+    "chatgpt": {
+        "session_token": "",
+        "interval": 3600000
+    }
+}

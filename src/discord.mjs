@@ -1,0 +1,123 @@
+import Discord from "discord.js";
+import { config } from "./env.mjs";
+import { searchStickers } from "./spongebobStickers.mjs";
+import chatgpt from "./chatgpt.mjs";
+// https://discord.com/api/oauth2/authorize?client_id=<>&permissions=277025410112&scope=bot%20applications.commands
+
+const client = new Discord.Client({
+    intents: [Discord.GatewayIntentBits.Guilds, Discord.GatewayIntentBits.GuildMessages]
+});
+
+client.on(Discord.Events.InteractionCreate, async interaction => {
+    if (!interaction.isChatInputCommand()) return;
+
+    const command = interaction.client.commands.get(interaction.commandName);
+
+    if (!command) {
+        console.error(`找不到 ${interaction.commandName} 的指令。`);
+        return;
+    }
+
+    try {
+        await command.execute(interaction);
+    } catch (error) {
+        console.error(error);
+        await interaction.reply({ content: '執行指令時發生錯誤。', ephemeral: true });
+    }
+});
+
+const commands = {
+    sb: {
+        data: new Discord.SlashCommandBuilder()
+            .setName('sb')
+            .setDescription('搜尋海綿寶寶貼圖')
+            .addStringOption(option => option.setName('keyword').setDescription('關鍵字').setRequired(true)),
+        execute: async (interaction) => {
+            await interaction.deferReply({
+                ephemeral: true
+            });
+
+            try {
+                const keyword = interaction.options.getString('keyword');
+                const stickers = await searchStickers(keyword);
+
+                if (stickers.length == 0) {
+                    await interaction.editReply({ content: `找不到 ${keyword} 的貼圖`, ephemeral: true });
+                    return;
+                }
+
+                const embed = new Discord.EmbedBuilder()
+                    .addFields({
+                        name: "搜尋結果",
+                        value: stickers.map(sticker => `[${sticker.名稱}](${sticker["i.imgur"]})`).join('\n')
+                    });
+
+                await interaction.editReply({ embeds: [embed], ephemeral: true });
+            } catch (e) {
+                console.error(e);
+                await interaction.editReply({ content: `發生錯誤。`, ephemeral: true });
+            }
+        }
+    },
+    chatgpt: {
+        data: new Discord.SlashCommandBuilder()
+            .setName('chatgpt')
+            .setDescription('與 ChatGPT 聊天')
+            .addStringOption(option => option.setName('question').setDescription('問題').setRequired(true))
+            .addBooleanOption(option => option.setName('ephemeral').setDescription('隱藏對話'))
+            .addBooleanOption(option => option.setName('reset').setDescription('重置對話')),
+        execute: async (interaction) => {
+            const ephemeral = interaction.options.getBoolean('ephemeral');
+            const reset = interaction.options.getBoolean('reset');
+
+            await interaction.deferReply({
+                ephemeral
+            });
+
+            if (reset) try {
+                chatgpt.deleteConversation(`${interaction.guildId}-${interaction.user.id}`);
+            } catch (e) {
+                console.error(e);
+                await interaction.editReply({ content: `重置對話發生錯誤。`, ephemeral});
+                return;
+            }
+
+            try {
+                const question = interaction.options.getString('question');
+
+                const conversation = await chatgpt.getConversation(`${interaction.guildId}-${interaction.user.id}`);
+                const answer = await conversation.sendMessage(question);
+
+                await thinking;
+                await interaction.editReply({ embeds: chatgpt.buildEmbeds(question, answer, interaction.user)});
+            } catch (e) {
+                console.error(e);
+                await interaction.editReply({ content: `發生錯誤。\n非常有可能是 ChatGPT 伺服器過載。`, ephemeral});
+            }
+        }
+    }
+}
+
+client.commands = new Discord.Collection();
+for (const command of Object.values(commands)) {
+    client.commands.set(command.data.name, command);
+};
+
+async function refreshCommands(guildId) {
+    try {
+        const rest = new Discord.REST({ version: '10' }).setToken(config.discord.token);
+        console.log(`Started refreshing ${Object.keys(commands).length} application (/) commands.`);
+
+        // The put method is used to fully refresh all commands in the guild with the current set
+        const data = await rest.put(
+            Discord.Routes.applicationGuildCommands(config.discord.clientId, guildId),
+            { body: Object.values(commands).map(c => c.data.toJSON()) },
+        );
+
+        console.log(`Successfully reloaded ${data.length} application (/) commands on ${guildId}.`);
+    } catch (error) {
+        // And of course, make sure you catch and log any errors!
+        console.error(error);
+    }
+}
+export { client, refreshCommands, Discord };
