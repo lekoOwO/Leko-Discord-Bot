@@ -4,3 +4,4 @@ services:
     image: "lekoowo/leko-discord-bot:master"
     volumes:
       - "${PWD}/data/config.json:/app/data/config.json"
+    restart: always
