@@ -1,0 +1,6 @@
+version: '3'
+services:
+  app:
+    image: "lekoowo/leko-discord-bot:master"
+    volumes:
+      - "${PWD}/data/config.json:/app/data/config.json"
