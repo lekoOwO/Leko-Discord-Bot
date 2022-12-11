@@ -130,7 +130,7 @@ const commands = {
                 const embed = new Discord.EmbedBuilder()
                     .addFields({
                         name: "ChatGPT Session",
-                        value: keys.map(x => x.split("-")[1]).map(x => `<@${x}>`).join('\n')
+                        value: keys.length ? keys.map(x => x.split("-")[1]).map(x => `<@${x}>`).join('\n') : ""
                     });
 
                 await interaction.editReply({ embeds: [embed], ephemeral: true });
