@@ -87,8 +87,7 @@ const commands = {
 
                 const conversation = await chatgpt.getConversation(`${interaction.guildId}-${interaction.user.id}`);
                 const answer = await conversation.sendMessage(question);
-
-                await thinking;
+                
                 await interaction.editReply({ embeds: chatgpt.buildEmbeds(question, answer, interaction.user)});
             } catch (e) {
                 console.error(e);
