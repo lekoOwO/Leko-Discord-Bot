@@ -104,9 +104,9 @@ const commands = {
             }
         }
     },
-    chatgptKeys: {
+    chatgpt_keys: {
         data: new Discord.SlashCommandBuilder()
-            .setName('chatgptKeys')
+            .setName('chatgpt_keys')
             .setDescription('查看 ChatGPT 的 Session'),
         execute: async (interaction) => {
             await interaction.deferReply({
