@@ -67,7 +67,7 @@ const commands = {
             .addStringOption(option => option.setName('question').setDescription('問題').setRequired(true))
             .addBooleanOption(option => option.setName('ephemeral').setDescription('隱藏對話'))
             .addBooleanOption(option => option.setName('reset').setDescription('重置對話'))
-            .addUserOption(option => option.setName('sessionUser').setDescription('Session 使用者')),
+            .addUserOption(option => option.setName('user').setDescription('Session 使用者')),
         execute: async (interaction) => {
             const ephemeral = interaction.options.getBoolean('ephemeral');
             const reset = interaction.options.getBoolean('reset');
@@ -79,8 +79,8 @@ const commands = {
             });
 
             let sessionId = `${interaction.guildId}-${interaction.user.id}`;
-            if (isAdmin(interaction.user.id) && interaction.options.getUser('sessionUser')) {
-                sessionId = `${interaction.guildId}-${interaction.options.getUser('sessionUser').id}`;
+            if (isAdmin(interaction.user.id) && interaction.options.getUser('user')) {
+                sessionId = `${interaction.guildId}-${interaction.options.getUser('user').id}`;
             }
 
             if (reset) try {
