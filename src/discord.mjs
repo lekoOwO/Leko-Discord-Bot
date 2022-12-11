@@ -126,7 +126,7 @@ const commands = {
             const cmgr = chatgpt.conversationManager;
 
             try {
-                const keys = cmgr.conversations.getConversationKeys();
+                const keys = cmgr.getConversationKeys();
                 const embed = new Discord.EmbedBuilder()
                     .addFields({
                         name: "ChatGPT Session",
