@@ -1,11 +1,11 @@
 lockfileVersion: 5.4
 
 specifiers:
-  chatgpt: ^2.0.5
+  chatgpt: ^2.0.7
   discord.js: ^14.7.1
 
 dependencies:
-  chatgpt: 2.0.5
+  chatgpt: 2.0.7
   discord.js: 14.7.1
 
 packages:
@@ -113,8 +113,8 @@ packages:
     resolution: {integrity: sha512-shx7oQ0Awen/BRIdkjkvz54PnEEI/EjwXDSIZp86/KKdbafHh1Df/RYGBhn4hbe2+uKC9FnT5UCEdyPz3ai9hQ==}
     dev: false
 
-  /chatgpt/2.0.5:
-    resolution: {integrity: sha512-eVswcmvAfYcYh3TK8ryP7305lnvUJXM4CTLayEtFoS25Ovd9mNsOYJPWYLa/B10+ClEOWpeRe1cLR9VssY6STQ==}
+  /chatgpt/2.0.7:
+    resolution: {integrity: sha512-+yEWRFl+vZbuXI2T96G1WZjE8g2eYs8Czi5pr/EpE64fPOVsZxQw3cgWETbGYICYD7mSpvh00r2fVHQfRM0NNg==}
     engines: {node: '>=16.8'}
     dependencies:
       eventsource-parser: 0.0.5

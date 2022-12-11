@@ -1,6 +1,6 @@
 {
 	"dependencies": {
-		"chatgpt": "^2.0.5",
+		"chatgpt": "^2.0.7",
 		"discord.js": "^14.7.1"
 	}
 }
