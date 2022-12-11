@@ -84,8 +84,10 @@ const commands = {
             });
 
             let sessionId = `${interaction.guildId}-${interaction.user.id}`;
+            let user = interaction.user;
             if (isAdmin(interaction.user.id) && interaction.options.getUser('user')) {
                 sessionId = `${interaction.guildId}-${interaction.options.getUser('user').id}`;
+                user = interaction.options.getUser('user');
             }
 
             if (reset) try {
@@ -106,11 +108,11 @@ const commands = {
                     onProgress: async(x) => {
                         if (Date.now() - lastAnswer > 1000) {
                             lastAnswer = Date.now();
-                            await interaction.editReply({ embeds: chatgpt.buildEmbeds(question, x, interaction.user)});
+                            await interaction.editReply({ embeds: chatgpt.buildEmbeds(question, x, user)});
                         }
                     }
                 });
-                await interaction.editReply({ embeds: chatgpt.buildEmbeds(question, answer, interaction.user)});
+                await interaction.editReply({ embeds: chatgpt.buildEmbeds(question, answer, user)});
             } catch (e) {
                 console.error(e);
                 await interaction.editReply({ content: `發生錯誤。\n非常有可能是 ChatGPT 伺服器過載。`, ephemeral});
