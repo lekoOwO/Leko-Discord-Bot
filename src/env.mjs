@@ -7,6 +7,11 @@ function getStaticFilePath(filename){
     return path.resolve(path.join(process.cwd(), 'static', filename));
 }
 
-const config = JSON.parse(fs.readFileSync(CONFIG_FILE_PATH, 'utf8'));
+let config;
 
-export {config, getStaticFilePath};
+function reloadConfig(){
+    config = JSON.parse(fs.readFileSync(CONFIG_FILE_PATH, 'utf8'));
+}
+reloadConfig();
+
+export {config, getStaticFilePath, reloadConfig};

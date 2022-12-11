@@ -2,12 +2,16 @@ import { ChatGPTAPI } from 'chatgpt'
 import { config } from "./env.mjs";
 import { sleep } from "./utils.mjs";
 
-const api = new ChatGPTAPI({
-    sessionToken: config.chatgpt.session_token
-})
+let api;
+
+function refreshSessionToken(){
+    api = new ChatGPTAPI({
+        sessionToken: config.chatgpt.session_token
+    })
+}
+refreshSessionToken();
 
 class ConversationManager {
-
     #conversations = {};
     #clearConversationPromise = null;
 
@@ -87,5 +91,6 @@ conversationManager.startClearConversations();
 export default {
     ConversationManager,
     conversationManager,
+    refreshSessionToken,
     buildEmbeds
 }

@@ -1,5 +1,5 @@
 import Discord from "discord.js";
-import { config } from "./env.mjs";
+import { config, reloadConfig } from "./env.mjs";
 import { searchStickers } from "./spongebobStickers.mjs";
 import chatgpt from "./chatgpt.mjs";
 import { isAdmin } from "./utils.mjs";
@@ -100,8 +100,16 @@ const commands = {
                 const question = interaction.options.getString('question');
 
                 const conversation = await cmgr.getConversation(sessionId);
-                const answer = await conversation.sendMessage(question);
 
+                let lastAnswer = 0;
+                const answer = await conversation.sendMessage(question, {
+                    onProgress: async(x) => {
+                        if (Date.now() - lastAnswer > 1000) {
+                            lastAnswer = Date.now();
+                            await interaction.editReply({ embeds: chatgpt.buildEmbeds(question, x, interaction.user)});
+                        }
+                    }
+                });
                 await interaction.editReply({ embeds: chatgpt.buildEmbeds(question, answer, interaction.user)});
             } catch (e) {
                 console.error(e);
@@ -134,6 +142,53 @@ const commands = {
                     });
 
                 await interaction.editReply({ embeds: [embed], ephemeral: true });
+            } catch (e) {
+                console.error(e);
+                await interaction.editReply({ content: `發生錯誤。`, ephemeral: true });
+            }
+        }
+    },
+    chatgpt_refresh: {
+        data: new Discord.SlashCommandBuilder()
+            .setName('chatgpt_refresh')
+            .setDescription('重新載入 ChatGPT'),
+        execute: async (interaction) => {
+            await interaction.deferReply({
+                ephemeral: true
+            });
+
+            if (!isAdmin(interaction.user.id)) {
+                await interaction.editReply({ content: `存取被拒。`, ephemeral: true });
+                return;
+            }
+
+            try {
+                reloadConfig();
+                chatgpt.refreshSessionToken();
+                await interaction.editReply({ content: `重新載入成功。`, ephemeral: true });
+            } catch (e) {
+                console.error(e);
+                await interaction.editReply({ content: `發生錯誤。`, ephemeral: true });
+            }
+        }
+    },
+    reload_config: {
+        data: new Discord.SlashCommandBuilder()
+            .setName('reload_config')
+            .setDescription('重新載入設定檔'),
+        execute: async (interaction) => {
+            await interaction.deferReply({
+                ephemeral: true
+            });
+
+            if (!isAdmin(interaction.user.id)) {
+                await interaction.editReply({ content: `存取被拒。`, ephemeral: true });
+                return;
+            }
+
+            try {
+                reloadConfig();
+                await interaction.editReply({ content: `重新載入成功。`, ephemeral: true });
             } catch (e) {
                 console.error(e);
                 await interaction.editReply({ content: `發生錯誤。`, ephemeral: true });
