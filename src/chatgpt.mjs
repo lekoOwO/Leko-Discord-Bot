@@ -2,50 +2,62 @@ import { ChatGPTAPI } from 'chatgpt'
 import { config } from "./env.mjs";
 import { sleep } from "./utils.mjs";
 
-const conversations = {};
-
 const api = new ChatGPTAPI({
     sessionToken: config.chatgpt.session_token
 })
 
-async function getConversation(id) {
-    await api.ensureAuth();
+class ConversationManager {
 
-    if (!conversations[id]) {
-        const conversation = api.getConversation();
-        conversations[id] = {
-            conversationId: conversation.conversationId,
-            parentMessageId: conversation.parentMessageId,
-            date: Date.now()
-        };
-        return conversation;
+    #conversations = {};
+    #clearConversationPromise = null;
+
+    async getConversation(id) {
+        await api.ensureAuth();
+
+        if (!this.#conversations[id]) {
+            const conversation = api.getConversation();
+            this.#conversations[id] = {conversation, date: Date.now()};
+            return conversation;
+        }
+
+        this.#conversations[id].date = Date.now();
+        return this.#conversations[id].conversation;
     }
 
-    conversations[id].date = Date.now();
-    return api.getConversation({
-        conversationId: conversations[id].conversationId,
-        parentMessageId: conversations[id].parentMessageId
-    })
-}
+    getConversationKeys(){
+        return Object.keys(this.#conversations);
+    }
 
-function deleteConversation(id) {
-    delete conversations[id];
-}
+    deleteConversation(id) {
+        delete this.#conversations[id];
+    }
 
-async function clearConversations() {
-    const interval = config.chatgpt?.interval ?? 1000 * 60 * 60;
-
-    while(true) {
-        for (const id in conversations) {
-            if (Date.now() - conversations[id].date > interval) {
-                delete conversations[id];
+    manualClearConversations() {
+        for (const id of Object.keys(this.#conversations)) {
+            if (Date.now() - this.#conversations[id].date > interval) {
+                delete this.#conversations[id];
             }
         }
-        await sleep(interval/2);
+    }
+
+    async #clearConversations() {
+        const interval = config.chatgpt?.interval ?? 1000 * 60 * 60;
+
+        while(true) {
+            for (const id of Object.keys(this.#conversations)) {
+                if (Date.now() - this.#conversations[id].date > interval) {
+                    delete this.#conversations[id];
+                }
+            }
+            await sleep(interval/2);
+        }
+    }
+
+    startClearConversations() {
+        if (this.#clearConversationPromise) return;
+        this.#clearConversationPromise = this.#clearConversations();
     }
 }
-
-clearConversations();
 
 function buildEmbeds(question, answer, user){
     const embeds = [
@@ -69,8 +81,11 @@ function buildEmbeds(question, answer, user){
     return embeds;
 }
 
+const conversationManager = new ConversationManager();
+conversationManager.startClearConversations();
+
 export default {
-    getConversation,
-    deleteConversation,
+    ConversationManager,
+    conversationManager,
     buildEmbeds
 }

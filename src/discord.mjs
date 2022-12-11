@@ -2,6 +2,7 @@ import Discord from "discord.js";
 import { config } from "./env.mjs";
 import { searchStickers } from "./spongebobStickers.mjs";
 import chatgpt from "./chatgpt.mjs";
+import { isAdmin } from "./utils.mjs";
 // https://discord.com/api/oauth2/authorize?client_id=<>&permissions=277025410112&scope=bot%20applications.commands
 
 const client = new Discord.Client({
@@ -65,17 +66,25 @@ const commands = {
             .setDescription('與 ChatGPT 聊天')
             .addStringOption(option => option.setName('question').setDescription('問題').setRequired(true))
             .addBooleanOption(option => option.setName('ephemeral').setDescription('隱藏對話'))
-            .addBooleanOption(option => option.setName('reset').setDescription('重置對話')),
+            .addBooleanOption(option => option.setName('reset').setDescription('重置對話'))
+            .addUserOption(option => option.setName('sessionUser').setDescription('Session 使用者')),
         execute: async (interaction) => {
             const ephemeral = interaction.options.getBoolean('ephemeral');
             const reset = interaction.options.getBoolean('reset');
+
+            const cmgr = chatgpt.conversationManager;
 
             await interaction.deferReply({
                 ephemeral
             });
 
+            let sessionId = `${interaction.guildId}-${interaction.user.id}`;
+            if (isAdmin(interaction.user.id) && interaction.options.getUser('sessionUser')) {
+                sessionId = `${interaction.guildId}-${interaction.options.getUser('sessionUser').id}`;
+            }
+
             if (reset) try {
-                chatgpt.deleteConversation(`${interaction.guildId}-${interaction.user.id}`);
+                cmgr.deleteConversation(sessionId);
             } catch (e) {
                 console.error(e);
                 await interaction.editReply({ content: `重置對話發生錯誤。`, ephemeral});
@@ -85,13 +94,44 @@ const commands = {
             try {
                 const question = interaction.options.getString('question');
 
-                const conversation = await chatgpt.getConversation(`${interaction.guildId}-${interaction.user.id}`);
+                const conversation = await cmgr.getConversation(sessionId);
                 const answer = await conversation.sendMessage(question);
-                
+
                 await interaction.editReply({ embeds: chatgpt.buildEmbeds(question, answer, interaction.user)});
             } catch (e) {
                 console.error(e);
                 await interaction.editReply({ content: `發生錯誤。\n非常有可能是 ChatGPT 伺服器過載。`, ephemeral});
+            }
+        }
+    },
+    chatgptKeys: {
+        data: new Discord.SlashCommandBuilder()
+            .setName('chatgptKeys')
+            .setDescription('查看 ChatGPT 的 Session'),
+        execute: async (interaction) => {
+            await interaction.deferReply({
+                ephemeral: true
+            });
+
+            if (!isAdmin(interaction.user.id)) {
+                await interaction.editReply({ content: `存取被拒。`, ephemeral: true });
+                return;
+            }
+
+            const cmgr = chatgpt.conversationManager;
+
+            try {
+                const keys = cmgr.conversations.getConversationKeys();
+                const embed = new Discord.EmbedBuilder()
+                    .addFields({
+                        name: "ChatGPT Session",
+                        value: keys.map(x => x.split("-")[1]).map(x => `<@${x}>`).join('\n')
+                    });
+
+                await interaction.editReply({ embeds: [embed], ephemeral: true });
+            } catch (e) {
+                console.error(e);
+                await interaction.editReply({ content: `發生錯誤。`, ephemeral: true });
             }
         }
     }

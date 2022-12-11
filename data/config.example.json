@@ -6,5 +6,6 @@
     "chatgpt": {
         "session_token": "",
         "interval": 3600000
-    }
+    },
+    "admins": []
 }
