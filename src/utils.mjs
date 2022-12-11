@@ -1,3 +1,5 @@
+import { config } from "./env.mjs";
+
 function sleep(ms){
     return new Promise(resolve => setTimeout(resolve, ms));
 }
