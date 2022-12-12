@@ -65,115 +65,115 @@ const commands = {
             }
         }
     },
-    chatgpt: {
-        data: new Discord.SlashCommandBuilder()
-            .setName('chatgpt')
-            .setDescription('與 ChatGPT 聊天')
-            .addStringOption(option => option.setName('question').setDescription('問題').setRequired(true))
-            .addBooleanOption(option => option.setName('ephemeral').setDescription('隱藏對話'))
-            .addBooleanOption(option => option.setName('reset').setDescription('重置對話'))
-            .addUserOption(option => option.setName('user').setDescription('Session 使用者')),
-        execute: async (interaction) => {
-            const ephemeral = interaction.options.getBoolean('ephemeral');
-            const reset = interaction.options.getBoolean('reset');
+    // chatgpt: {
+    //     data: new Discord.SlashCommandBuilder()
+    //         .setName('chatgpt')
+    //         .setDescription('與 ChatGPT 聊天')
+    //         .addStringOption(option => option.setName('question').setDescription('問題').setRequired(true))
+    //         .addBooleanOption(option => option.setName('ephemeral').setDescription('隱藏對話'))
+    //         .addBooleanOption(option => option.setName('reset').setDescription('重置對話'))
+    //         .addUserOption(option => option.setName('user').setDescription('Session 使用者')),
+    //     execute: async (interaction) => {
+    //         const ephemeral = interaction.options.getBoolean('ephemeral');
+    //         const reset = interaction.options.getBoolean('reset');
 
-            const cmgr = chatgpt.conversationManager;
+    //         const cmgr = chatgpt.conversationManager;
 
-            await interaction.deferReply({
-                ephemeral
-            });
+    //         await interaction.deferReply({
+    //             ephemeral
+    //         });
 
-            let sessionId = `${interaction.guildId}-${interaction.user.id}`;
-            let user = interaction.user;
-            if (isAdmin(interaction.user.id) && interaction.options.getUser('user')) {
-                sessionId = `${interaction.guildId}-${interaction.options.getUser('user').id}`;
-                user = interaction.options.getUser('user');
-            }
+    //         let sessionId = `${interaction.guildId}-${interaction.user.id}`;
+    //         let user = interaction.user;
+    //         if (isAdmin(interaction.user.id) && interaction.options.getUser('user')) {
+    //             sessionId = `${interaction.guildId}-${interaction.options.getUser('user').id}`;
+    //             user = interaction.options.getUser('user');
+    //         }
 
-            if (reset) try {
-                cmgr.deleteConversation(sessionId);
-            } catch (e) {
-                console.error(e);
-                await interaction.editReply({ content: `重置對話發生錯誤。`, ephemeral});
-                return;
-            }
+    //         if (reset) try {
+    //             cmgr.deleteConversation(sessionId);
+    //         } catch (e) {
+    //             console.error(e);
+    //             await interaction.editReply({ content: `重置對話發生錯誤。`, ephemeral});
+    //             return;
+    //         }
 
-            try {
-                const question = interaction.options.getString('question');
+    //         try {
+    //             const question = interaction.options.getString('question');
 
-                const conversation = await cmgr.getConversation(sessionId);
+    //             const conversation = await cmgr.getConversation(sessionId);
 
-                let lastAnswer = 0;
-                const answer = await conversation.sendMessage(question, {
-                    onProgress: async(x) => {
-                        if (Date.now() - lastAnswer > 1000) {
-                            lastAnswer = Date.now();
-                            await interaction.editReply({ embeds: chatgpt.buildEmbeds(question, x, user)});
-                        }
-                    }
-                });
-                await interaction.editReply({ embeds: chatgpt.buildEmbeds(question, answer, user)});
-            } catch (e) {
-                console.error(e);
-                await interaction.editReply({ content: `發生錯誤。\n非常有可能是 ChatGPT 伺服器過載。`, ephemeral});
-            }
-        }
-    },
-    chatgpt_keys: {
-        data: new Discord.SlashCommandBuilder()
-            .setName('chatgpt_keys')
-            .setDescription('查看 ChatGPT 的 Session'),
-        execute: async (interaction) => {
-            await interaction.deferReply({
-                ephemeral: true
-            });
+    //             let lastAnswer = 0;
+    //             const answer = await conversation.sendMessage(question, {
+    //                 onProgress: async(x) => {
+    //                     if (Date.now() - lastAnswer > 1000) {
+    //                         lastAnswer = Date.now();
+    //                         await interaction.editReply({ embeds: chatgpt.buildEmbeds(question, x, user)});
+    //                     }
+    //                 }
+    //             });
+    //             await interaction.editReply({ embeds: chatgpt.buildEmbeds(question, answer, user)});
+    //         } catch (e) {
+    //             console.error(e);
+    //             await interaction.editReply({ content: `發生錯誤。\n非常有可能是 ChatGPT 伺服器過載。`, ephemeral});
+    //         }
+    //     }
+    // },
+    // chatgpt_keys: {
+    //     data: new Discord.SlashCommandBuilder()
+    //         .setName('chatgpt_keys')
+    //         .setDescription('查看 ChatGPT 的 Session'),
+    //     execute: async (interaction) => {
+    //         await interaction.deferReply({
+    //             ephemeral: true
+    //         });
 
-            if (!isAdmin(interaction.user.id)) {
-                await interaction.editReply({ content: `存取被拒。`, ephemeral: true });
-                return;
-            }
+    //         if (!isAdmin(interaction.user.id)) {
+    //             await interaction.editReply({ content: `存取被拒。`, ephemeral: true });
+    //             return;
+    //         }
 
-            const cmgr = chatgpt.conversationManager;
+    //         const cmgr = chatgpt.conversationManager;
 
-            try {
-                const keys = cmgr.getConversationKeys();
-                const embed = new Discord.EmbedBuilder()
-                    .addFields({
-                        name: "ChatGPT Session",
-                        value: keys.length ? keys.map(x => x.split("-")[1]).map(x => `<@${x}>`).join('\n') : "沒有 Session"
-                    });
+    //         try {
+    //             const keys = cmgr.getConversationKeys();
+    //             const embed = new Discord.EmbedBuilder()
+    //                 .addFields({
+    //                     name: "ChatGPT Session",
+    //                     value: keys.length ? keys.map(x => x.split("-")[1]).map(x => `<@${x}>`).join('\n') : "沒有 Session"
+    //                 });
 
-                await interaction.editReply({ embeds: [embed], ephemeral: true });
-            } catch (e) {
-                console.error(e);
-                await interaction.editReply({ content: `發生錯誤。`, ephemeral: true });
-            }
-        }
-    },
-    chatgpt_refresh: {
-        data: new Discord.SlashCommandBuilder()
-            .setName('chatgpt_refresh')
-            .setDescription('重新載入 ChatGPT'),
-        execute: async (interaction) => {
-            await interaction.deferReply({
-                ephemeral: true
-            });
+    //             await interaction.editReply({ embeds: [embed], ephemeral: true });
+    //         } catch (e) {
+    //             console.error(e);
+    //             await interaction.editReply({ content: `發生錯誤。`, ephemeral: true });
+    //         }
+    //     }
+    // },
+    // chatgpt_refresh: {
+    //     data: new Discord.SlashCommandBuilder()
+    //         .setName('chatgpt_refresh')
+    //         .setDescription('重新載入 ChatGPT'),
+    //     execute: async (interaction) => {
+    //         await interaction.deferReply({
+    //             ephemeral: true
+    //         });
 
-            if (!isAdmin(interaction.user.id)) {
-                await interaction.editReply({ content: `存取被拒。`, ephemeral: true });
-                return;
-            }
+    //         if (!isAdmin(interaction.user.id)) {
+    //             await interaction.editReply({ content: `存取被拒。`, ephemeral: true });
+    //             return;
+    //         }
 
-            try {
-                reloadConfig();
-                chatgpt.refreshSessionToken();
-                await interaction.editReply({ content: `重新載入成功。`, ephemeral: true });
-            } catch (e) {
-                console.error(e);
-                await interaction.editReply({ content: `發生錯誤。`, ephemeral: true });
-            }
-        }
-    },
+    //         try {
+    //             reloadConfig();
+    //             chatgpt.refreshSessionToken();
+    //             await interaction.editReply({ content: `重新載入成功。`, ephemeral: true });
+    //         } catch (e) {
+    //             console.error(e);
+    //             await interaction.editReply({ content: `發生錯誤。`, ephemeral: true });
+    //         }
+    //     }
+    // },
     reload_config: {
         data: new Discord.SlashCommandBuilder()
             .setName('reload_config')
