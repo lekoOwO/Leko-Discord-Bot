@@ -214,11 +214,11 @@ const commands = {
             }
 
             if (!await isValidInviter(interaction.user, channelId, interaction.member.joinedTimestamp)){
-                console.error(`邀請連結建立失敗：${interaction.user.tag}\n${{ 
+                console.error(`邀請連結建立失敗：${interaction.user.tag}\n${JSON.stringify({ 
                     channelId: interaction.channel.id, channelName: interaction.channel.name,
                     guildId: interaction.guildId, guildName: interaction.guild.name,
                     joinedAt: interaction.member.joinedTimestamp
-                }}}`)
+                })}}`)
                 await interaction.editReply({ content: `您已超過邀請次數，或是無法在此建立邀請連結。`, ephemeral: true });
                 return;
             }
