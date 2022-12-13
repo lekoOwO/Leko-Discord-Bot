@@ -1,5 +1,6 @@
 {
 	"dependencies": {
+		"async-mutex": "^0.4.0",
 		"chatgpt": "^2.0.7",
 		"discord.js": "^14.7.1"
 	}

@@ -1,8 +1,9 @@
 import Discord from "discord.js";
 import { config, reloadConfig } from "./env.mjs";
 import { searchStickers } from "./spongebobStickers.mjs";
-import chatgpt from "./chatgpt.mjs";
+// import chatgpt from "./chatgpt.mjs";
 import { isAdmin } from "./utils.mjs";
+import { isValidInviter, addDbInvite, getChannelId as inviteGetChannelId, configSubpath as inviteConfigSubpath } from "./discordInvite.mjs";
 // https://discord.com/api/oauth2/authorize?client_id=<>&permissions=277025410112&scope=bot%20applications.commands
 
 const client = new Discord.Client({
@@ -191,6 +192,47 @@ const commands = {
             try {
                 reloadConfig();
                 await interaction.editReply({ content: `重新載入成功。`, ephemeral: true });
+            } catch (e) {
+                console.error(e);
+                await interaction.editReply({ content: `發生錯誤。`, ephemeral: true });
+            }
+        }
+    },
+    invite: {
+        data: new Discord.SlashCommandBuilder()
+            .setName('invite')
+            .setDescription('產生一次性邀請連結'),
+        execute: async (interaction) => {
+            await interaction.deferReply({
+                ephemeral: true
+            });
+
+            const channelId = inviteGetChannelId(interaction.guildId, interaction.channelId);
+            if (!channelId) {
+                await interaction.editReply({ content: `無法在此建立邀請連結。`, ephemeral: true });
+                return;
+            }
+
+            if (!await isValidInviter(interaction.user.id, interaction.channelId)){
+                await interaction.editReply({ content: `您已超過邀請次數，或是無法在此建立邀請連結。`, ephemeral: true });
+                return;
+            }
+
+            try {
+                const guild = await client.guilds.fetch(interaction.guildId);
+                const invite = await guild.invites.create(channelId, {
+                    temporary: true,
+                    maxAge: config[inviteConfigSubpath].maxAge,
+                    maxUses: 1,
+                    unique: true,
+                    reason: `邀請連結由 ${interaction.user.tag} 建立。`
+                });
+                await addDbInvite(interaction.user.id, interaction.channelId, {
+                    createdAt: invite.createdTimestamp,
+                    expiresAt: invite.expiresTimestamp,
+                    code: invite.code,
+                })
+                await interaction.editReply({ content: `邀請連結已建立: ${invite.url}`, ephemeral: true });
             } catch (e) {
                 console.error(e);
                 await interaction.editReply({ content: `發生錯誤。`, ephemeral: true });

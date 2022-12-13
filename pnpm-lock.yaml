@@ -1,10 +1,12 @@
 lockfileVersion: 5.4
 
 specifiers:
+  async-mutex: ^0.4.0
   chatgpt: ^2.0.7
   discord.js: ^14.7.1
 
 dependencies:
+  async-mutex: 0.4.0
   chatgpt: 2.0.7
   discord.js: 14.7.1
 
@@ -96,6 +98,12 @@ packages:
     resolution: {integrity: sha512-6YOoWjruKj1uLf3INHH7D3qTXwFfEsg1kf3c0uDdSBJwfa/llkwIjrAGV7j7mVgGNbzTQ3HiHKKDXl6bJPD97w==}
     dependencies:
       '@types/node': 18.11.12
+    dev: false
+
+  /async-mutex/0.4.0:
+    resolution: {integrity: sha512-eJFZ1YhRR8UN8eBLoNzcDPcy/jqjsg6I1AP+KvWQX80BqOSW1oJPJXDylPUEeMr2ZQvHgnQ//Lp6f3RQ1zI7HA==}
+    dependencies:
+      tslib: 2.4.1
     dev: false
 
   /bail/2.0.2:

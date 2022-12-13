@@ -7,5 +7,14 @@
     "chatgpt": {
         "session_token": "",
         "interval": 3600000
+    },
+    "discord_invite": {
+        "channels": [],
+        "guildToChannelMap": {
+            "guildId": "channelId"
+        },
+        "interval": 2592000000,
+        "invitesPerInterval": 2,
+        "maxAge": 86400
     }
 }

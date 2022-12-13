@@ -7,6 +7,10 @@ function getStaticFilePath(filename){
     return path.resolve(path.join(process.cwd(), 'static', filename));
 }
 
+function getDataFilePath(filename){
+    return path.resolve(path.join(process.cwd(), 'data', filename));
+}
+
 let config;
 
 function reloadConfig(){
@@ -14,4 +18,4 @@ function reloadConfig(){
 }
 reloadConfig();
 
-export {config, getStaticFilePath, reloadConfig};
+export {config, getStaticFilePath, getDataFilePath, reloadConfig};
