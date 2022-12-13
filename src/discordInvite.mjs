@@ -42,7 +42,7 @@ async function isValidInviter(inviter, channelId, joinedAt) {
     if (!config[CONFIG_SUBPATH].channels.includes(channelId)) return false;
     if (inviter.bot) return false;
     if (await isAdmin(inviter.id)) return true;
-    if (joinedAt + validAfter > Date.now()) return false;
+    if (joinedAt + config[CONFIG_SUBPATH].validAfter > Date.now()) return false;
     if (getDbUserInvitesWithIn(inviter.id, channelId, config[CONFIG_SUBPATH].interval).length < config[CONFIG_SUBPATH].invitesPerInterval) return true;
 
     return false;
