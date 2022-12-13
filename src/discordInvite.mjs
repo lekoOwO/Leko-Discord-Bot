@@ -38,10 +38,11 @@ if (!fs.existsSync(DISCORD_INVITE_FILE_PATH)) {
 
 discordInvite = JSON.parse(fs.readFileSync(DISCORD_INVITE_FILE_PATH, 'utf8'));
 
-async function isValidInviter(inviter, channelId) {
+async function isValidInviter(inviter, channelId, joinedAt) {
     if (!config[CONFIG_SUBPATH].channels.includes(channelId)) return false;
     if (inviter.bot) return false;
     if (await isAdmin(inviter.id)) return true;
+    if (joinedAt < Date.now() - config[CONFIG_SUBPATH].validAfter) return false;
     if (getDbUserInvitesWithIn(inviter.id, channelId, config[CONFIG_SUBPATH].interval).length < config[CONFIG_SUBPATH].invitesPerInterval) return true;
 
     return false;

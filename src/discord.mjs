@@ -213,7 +213,7 @@ const commands = {
                 return;
             }
 
-            if (!await isValidInviter(interaction.user.id, interaction.channelId)){
+            if (!await isValidInviter(interaction.user.id, interaction.channelId, interaction.member.joinedTimestamp)){
                 await interaction.editReply({ content: `您已超過邀請次數，或是無法在此建立邀請連結。`, ephemeral: true });
                 return;
             }
