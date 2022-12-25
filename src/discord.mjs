@@ -7,7 +7,7 @@ import { isValidInviter, addDbInvite, getChannelId as inviteGetChannelId, config
 // https://discord.com/api/oauth2/authorize?client_id=<>&permissions=277025410112&scope=bot%20applications.commands
 
 const client = new Discord.Client({
-    intents: [Discord.GatewayIntentBits.Guilds, Discord.GatewayIntentBits.GuildMessages]
+    intents: [Discord.GatewayIntentBits.Guilds, Discord.GatewayIntentBits.GuildMessages, Discord.GatewayIntentBits.MessageContent]
 });
 
 client.on(Discord.Events.InteractionCreate, async interaction => {
@@ -238,6 +238,55 @@ const commands = {
                     code: invite.code,
                 })
                 await interaction.editReply({ content: `邀請連結已建立: ${invite.url}`, ephemeral: true });
+            } catch (e) {
+                console.error(e);
+                await interaction.editReply({ content: `發生錯誤。`, ephemeral: true });
+            }
+        }
+    },
+    emoji: {
+        data: new Discord.SlashCommandBuilder()
+            .setName('emoji')
+            .setDescription('取得表情符號的圖片連結')
+            .addStringOption(option => option.setName('message-id').setDescription('來源訊息 ID').setRequired(true)),
+        execute: async (interaction) => {
+            await interaction.deferReply({
+                ephemeral: true
+            });
+
+            if (!isAdmin(interaction.user.id)) {
+                await interaction.editReply({ content: `存取被拒。`, ephemeral: true });
+                return;
+            }
+
+            try {
+                const messageId = interaction.options.getString('message-id');
+                const message = await interaction.channel.messages.fetch(messageId);
+
+                const emojis = message.content.match(/<a?:[a-zA-Z0-9_]+:[0-9]+>/g);
+                if (!emojis) {
+                    await interaction.editReply({ content: `訊息內沒有表情符號。`, ephemeral: true });
+                    return;
+                }
+
+                const postEmojis = emojis.map(emoji => {
+                    const emojiName = emoji.match(/:[a-zA-Z0-9_]+:/)[0];
+                    const emojiId = emoji.match(/:([0-9]+)/)[1];
+                    const emojiUrl = `https://cdn.discordapp.com/emojis/${emojiId}.${emoji.startsWith('<a:') ? 'gif' : 'webp'}`;
+                    return ({
+                        name: emojiName,
+                        url: emojiUrl
+                    })
+                });
+
+                const embed = new Discord.EmbedBuilder()
+                    .addFields({
+                        name: "搜尋結果",
+                        value: postEmojis.map(pe => `[${pe.name}](${pe.url})`).join('\n')
+                    });
+
+                await interaction.editReply({ embeds: [embed], ephemeral: true });
+
             } catch (e) {
                 console.error(e);
                 await interaction.editReply({ content: `發生錯誤。`, ephemeral: true });
