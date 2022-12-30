@@ -1,9 +1,12 @@
 import { getStaticFilePath } from './env.mjs';
 import fs from 'fs';
 
-const csvPath = getStaticFilePath('有點高畫質的表格(暫時救回來了) - 網址.csv');
+const CSV_PATH = {
+    SPONGEBOB: getStaticFilePath('有點高畫質的表格(暫時救回來了) - 網址.csv'),
+    場外: getStaticFilePath('場外板.csv'),
+}
 
-async function searchStickers(keyword) {
+async function searchStickers(keyword, csvPath) {
     const matchLines = [];
 
     const data = await fs.promises.readFile(csvPath, 'utf8');
@@ -30,4 +33,13 @@ async function searchStickers(keyword) {
     return result;
 }
 
-export {searchStickers};
+async function searchStickersAll(keyword) {
+    const result = [];
+    await Promise.all(Object.values(CSV_PATH).map(async (csvPath) => {
+        const stickers = await searchStickers(keyword, csvPath);
+        result.push(...stickers);
+    }));
+    return result;
+}
+
+export {searchStickers, searchStickersAll, CSV_PATH};

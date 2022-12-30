@@ -1,6 +1,6 @@
 import Discord from "discord.js";
 import { config, reloadConfig } from "./env.mjs";
-import { searchStickers } from "./spongebobStickers.mjs";
+import { searchStickersAll } from "./stickers.mjs";
 // import chatgpt from "./chatgpt.mjs";
 import { isAdmin } from "./utils.mjs";
 import { isValidInviter, addDbInvite, getChannelId as inviteGetChannelId, configSubpath as inviteConfigSubpath } from "./discordInvite.mjs";
@@ -34,10 +34,10 @@ client.on(Discord.Events.InteractionCreate, async interaction => {
 });
 
 const commands = {
-    sb: {
+    sticker: {
         data: new Discord.SlashCommandBuilder()
-            .setName('sb')
-            .setDescription('搜尋海綿寶寶貼圖')
+            .setName('sticker')
+            .setDescription('搜尋貼圖')
             .addStringOption(option => option.setName('keyword').setDescription('關鍵字').setRequired(true)),
         execute: async (interaction) => {
             await interaction.deferReply({
@@ -46,7 +46,7 @@ const commands = {
 
             try {
                 const keyword = interaction.options.getString('keyword');
-                const stickers = await searchStickers(keyword);
+                const stickers = await searchStickersAll(keyword);
 
                 if (stickers.length == 0) {
                     await interaction.editReply({ content: `找不到 ${keyword} 的貼圖`, ephemeral: true });
@@ -56,7 +56,7 @@ const commands = {
                 const embed = new Discord.EmbedBuilder()
                     .addFields({
                         name: "搜尋結果",
-                        value: stickers.map(sticker => `[${sticker.名稱}](${sticker["i.imgur"]})`).join('\n')
+                        value: stickers.map(sticker => `[${sticker.名稱}](${sticker["圖片網址"] ?? sticker["i.imgur"]})`).join('\n')
                     });
 
                 await interaction.editReply({ embeds: [embed], ephemeral: true });
