@@ -1,6 +1,9 @@
 import { config } from './env.mjs';
 import fs from 'fs';
 
+import { Readable } from 'stream';
+import { finished } from 'stream/promises';
+
 async function searchStickers(keyword, csvPath) {
     const matchLines = [];
 
@@ -40,8 +43,9 @@ async function initStickers() {
 
             try {
                 const res = await fetch(x.url);
-                const data = await res.arrayBuffer()
-                await fs.promises.writeFile(x.file, data);
+                const body = Readable.fromWeb(res.body);
+                const stream = fs.createWriteStream(x.file);
+                await finished(body.pipe(stream));
             } catch (e) {
                 console.error(`initStickers: Failed to download stickers file ${x.file}.`);
                 console.error(e);
@@ -61,8 +65,9 @@ async function reloadStickers() {
 
             try {
                 const res = await fetch(x.url);
-                const data = await res.arrayBuffer()
-                await fs.promises.writeFile(x.file, data);
+                const body = Readable.fromWeb(res.body);
+                const stream = fs.createWriteStream(x.file);
+                await finished(body.pipe(stream));
             } catch (e) {
                 console.error(`reloadStickers: Failed to download stickers file ${x.file}.`);
                 console.error(e);
