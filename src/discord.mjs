@@ -1,6 +1,6 @@
 import Discord from "discord.js";
 import { config, reloadConfig } from "./env.mjs";
-import { searchStickersAll } from "./stickers.mjs";
+import { searchStickersAll, reloadStickers } from "./stickers.mjs";
 // import chatgpt from "./chatgpt.mjs";
 import { isAdmin } from "./utils.mjs";
 import { isValidInviter, addDbInvite, getChannelId as inviteGetChannelId, configSubpath as inviteConfigSubpath } from "./discordInvite.mjs";
@@ -60,6 +60,29 @@ const commands = {
                     });
 
                 await interaction.editReply({ embeds: [embed], ephemeral: true });
+            } catch (e) {
+                console.error(e);
+                await interaction.editReply({ content: `發生錯誤。`, ephemeral: true });
+            }
+        }
+    },
+    reload_sticker: {
+        data: new Discord.SlashCommandBuilder()
+            .setName('reload_sticker')
+            .setDescription('重新載入貼圖'),
+        execute: async (interaction) => {
+            await interaction.deferReply({
+                ephemeral: true
+            });
+
+            if (!isAdmin(interaction.user.id)) {
+                await interaction.editReply({ content: `存取被拒。`, ephemeral: true });
+                return;
+            }
+
+            try {
+                await reloadStickers();
+                await interaction.editReply({ content: `重新載入貼圖成功。`, ephemeral: true });
             } catch (e) {
                 console.error(e);
                 await interaction.editReply({ content: `發生錯誤。`, ephemeral: true });

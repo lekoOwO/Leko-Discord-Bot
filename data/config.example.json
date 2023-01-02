@@ -17,5 +17,11 @@
         "validAfter": 2592000000,
         "invitesPerInterval": 2,
         "maxAge": 86400
+    },
+    "stickers": {
+        "name": {
+            "file": "FILE_NAME_IN_DATA_FOLDER",
+            "url": "URL to CSV file used for reload_sticker command, or null if not required to reload."
+        }
     }
 }

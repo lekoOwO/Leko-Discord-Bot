@@ -1,10 +1,5 @@
-import { getStaticFilePath } from './env.mjs';
+import { config } from './env.mjs';
 import fs from 'fs';
-
-const CSV_PATH = {
-    SPONGEBOB: getStaticFilePath('有點高畫質的表格(暫時救回來了) - 網址.csv'),
-    場外: getStaticFilePath('場外板.csv'),
-}
 
 async function searchStickers(keyword, csvPath) {
     const matchLines = [];
@@ -33,13 +28,60 @@ async function searchStickers(keyword, csvPath) {
     return result;
 }
 
+async function initStickers() {
+    await Promise.all(
+        Object.values(config.stickers).map(async x => {
+            if (fs.existsSync(x.file)) return;
+            if (!x.url) {
+                console.error(`initStickers: Stickers file ${x.file} not found and no url provided.`);
+                return;
+            }
+            console.log(`Downloading stickers file ${x.file}.`);
+
+            try {
+                const res = await fetch(x.url);
+                const data = await res.arrayBuffer()
+                await fs.promises.writeFile(x.file, data);
+            } catch (e) {
+                console.error(`initStickers: Failed to download stickers file ${x.file}.`);
+                console.error(e);
+            }
+        })
+    )
+}
+
+async function reloadStickers() {
+    await Promise.all(
+        Object.values(config.stickers).map(async x => {
+            if (!x.url) {
+                console.error(`reloadStickers: Stickers file ${x.file} not found and no url provided.`);
+                return;
+            }
+            console.log(`Downloading stickers file ${x.file}.`);
+
+            try {
+                const res = await fetch(x.url);
+                const data = await res.arrayBuffer()
+                await fs.promises.writeFile(x.file, data);
+            } catch (e) {
+                console.error(`reloadStickers: Failed to download stickers file ${x.file}.`);
+                console.error(e);
+            }
+        })
+    )
+}
+
 async function searchStickersAll(keyword) {
+    await initStickers();
+
     const result = [];
-    await Promise.all(Object.values(CSV_PATH).map(async (csvPath) => {
-        const stickers = await searchStickers(keyword, csvPath);
+    await Promise.all(Object.values(config.stickers).map(async (x) => {
+        const stickers = await searchStickers(keyword, x.file);
         result.push(...stickers);
     }));
     return result;
-}
+};
 
-export {searchStickers, searchStickersAll, CSV_PATH};
+initStickers();
+
+export { searchStickers, searchStickersAll, initStickers, reloadStickers };
