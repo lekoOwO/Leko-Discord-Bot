@@ -39,15 +39,17 @@ async function initStickers() {
                 console.error(`initStickers: Stickers file ${x.file} not found and no url provided.`);
                 return;
             }
-            console.log(`Downloading stickers file ${x.file}.`);
+            console.log(`initStickers: Downloading sticker file ${x.file}.`);
 
             try {
                 const res = await fetch(x.url);
                 const body = Readable.fromWeb(res.body);
                 const stream = fs.createWriteStream(x.file);
                 await finished(body.pipe(stream));
+                
+                console.log(`initStickers: Sticker file ${x.file} downloaded.`);
             } catch (e) {
-                console.error(`initStickers: Failed to download stickers file ${x.file}.`);
+                console.error(`initStickers: Failed to download sticker file ${x.file}.`);
                 console.error(e);
             }
         })
@@ -58,18 +60,20 @@ async function reloadStickers() {
     await Promise.all(
         Object.values(config.stickers).map(async x => {
             if (!x.url) {
-                console.error(`reloadStickers: Stickers file ${x.file} not found and no url provided.`);
+                console.error(`reloadStickers: Sticker file ${x.file} not found and no url provided.`);
                 return;
             }
-            console.log(`Downloading stickers file ${x.file}.`);
+            console.log(`reloadStickers: Downloading sticker file ${x.file}.`);
 
             try {
                 const res = await fetch(x.url);
                 const body = Readable.fromWeb(res.body);
                 const stream = fs.createWriteStream(x.file);
                 await finished(body.pipe(stream));
+
+                console.log(`reloadStickers: Sticker file ${x.file} downloaded.`);
             } catch (e) {
-                console.error(`reloadStickers: Failed to download stickers file ${x.file}.`);
+                console.error(`reloadStickers: Failed to download sticker file ${x.file}.`);
                 console.error(e);
             }
         })
