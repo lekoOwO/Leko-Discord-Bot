@@ -255,7 +255,7 @@ const commands = {
                     unique: true,
                     reason: `邀請連結由 ${interaction.user.tag} 建立。`
                 });
-                await addDbInvite(interaction.user.id, interaction.channelId, {
+                await addDbInvite(interaction.user.id, channelId, {
                     createdAt: invite.createdTimestamp,
                     expiresAt: invite.expiresTimestamp,
                     code: invite.code,
