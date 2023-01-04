@@ -8,7 +8,21 @@ function isAdmin(id) {
     return config.discord?.admins?.includes(id.toString());
 }
 
+function log(...x){
+    if (config.debug){
+        console.log(...x);
+    }
+}
+
+function error(...x){
+    if (config.debug){
+        console.error(...x);
+    }
+}
+
 export {
     sleep,
-    isAdmin
+    isAdmin,
+    log,
+    error,
 }

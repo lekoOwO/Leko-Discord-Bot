@@ -1,5 +1,7 @@
 import { config, getDataFilePath } from "./env.mjs";
 import { isAdmin } from "./utils.mjs";
+import { log, error } from './utils.mjs';
+
 import fs from "fs";
 import { Mutex } from 'async-mutex';
 
@@ -24,12 +26,21 @@ async function addDbInvite(userId, channelId, invite){
 
 function getDbUserInvitesWithIn(userId, channelId, interval){
     if (!discordInvite.hasOwnProperty(userId)){
+        log(`[x] getDbUserInvitesWithIn: user ${userId} not found.\n${userId}/${channelId}/${interval}`);
         return [];
     }
     if (!discordInvite[userId].hasOwnProperty(channelId)){
+        log(`[x] getDbUserInvitesWithIn: channel ${channelId} not found for ${userId}.\n${userId}/${channelId}/${interval}`);
         return [];
     }
-    return discordInvite[userId][channelId].filter(x => x.createdAt > Date.now() - interval);
+    
+    log(`[v] getDbUserInvitesWithIn: user ${userId} has ${discordInvite[userId][channelId].length} invites.` +
+        `Target Date: ${(Date.now() - interval)}` +
+        `Filtered Invites: ${discordInvite[userId][channelId].filter(x => x.createdAt > (Date.now() - interval)).length}` + 
+        `\n${userId}/${channelId}/${interval}`
+    )
+
+    return discordInvite[userId][channelId].filter(x => x.createdAt > (Date.now() - interval));
 };
 
 if (!fs.existsSync(DISCORD_INVITE_FILE_PATH)) {
@@ -40,24 +51,24 @@ discordInvite = JSON.parse(fs.readFileSync(DISCORD_INVITE_FILE_PATH, 'utf8'));
 
 async function isValidInviter(inviter, channelId, joinedAt) {
     if (!config[CONFIG_SUBPATH].channels.includes(channelId)) {
-        console.log(`[x] isValidInviter: channel ${channelId} not found.\n${inviter.id}/${channelId}/${joinedAt}`);
+        log(`[x] isValidInviter: channel ${channelId} not found.\n${inviter.id}/${channelId}/${joinedAt}`);
         return false;
     }
     if (inviter.bot) {
-        console.log(`[x] isValidInviter: inviter is bot.\n${inviter.id}/${channelId}/${joinedAt}`);
+        log(`[x] isValidInviter: inviter is bot.\n${inviter.id}/${channelId}/${joinedAt}`);
         return false;
     }
     if (joinedAt + config[CONFIG_SUBPATH].validAfter > Date.now()) {
-        console.log(`[x] isValidInviter: Not old enough to create invite (${joinedAt + config[CONFIG_SUBPATH].validAfter}/${Date.now()}).\n${inviter.id}/${channelId}/${joinedAt}`);
+        log(`[x] isValidInviter: Not old enough to create invite (${joinedAt + config[CONFIG_SUBPATH].validAfter}/${Date.now()}).\n${inviter.id}/${channelId}/${joinedAt}`);
         return false;
     }
     const invites = getDbUserInvitesWithIn(inviter.id, channelId, config[CONFIG_SUBPATH].interval).length;
     const inviteLimit = config[CONFIG_SUBPATH].invitesPerInterval;
     if (invites < inviteLimit) {
-        console.log(`[v] isValidInviter: inviter has not reached invite limit. (${invites}/${inviteLimit})\n${inviter.id}/${channelId}/${joinedAt}`);
+        log(`[v] isValidInviter: inviter has not reached invite limit. (${invites}/${inviteLimit})\n${inviter.id}/${channelId}/${joinedAt}`);
         return true;
     } else {
-        console.log(`[x] isValidInviter: inviter has reached invite limit. (${invites}/${inviteLimit})\n${inviter.id}/${channelId}/${joinedAt}`);
+        log(`[x] isValidInviter: inviter has reached invite limit. (${invites}/${inviteLimit})\n${inviter.id}/${channelId}/${joinedAt}`);
     }
 
     return false;

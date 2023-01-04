@@ -1,4 +1,5 @@
 import { config } from './env.mjs';
+import { log, error } from './utils.mjs';
 import fs from 'fs';
 
 import { Readable } from 'stream';
@@ -36,10 +37,10 @@ async function initStickers() {
         Object.values(config.stickers).map(async x => {
             if (fs.existsSync(x.file)) return;
             if (!x.url) {
-                console.error(`initStickers: Stickers file ${x.file} not found and no url provided.`);
+                error(`initStickers: Stickers file ${x.file} not found and no url provided.`);
                 return;
             }
-            console.log(`initStickers: Downloading sticker file ${x.file}.`);
+            log(`initStickers: Downloading sticker file ${x.file}.`);
 
             try {
                 const res = await fetch(x.url);
@@ -47,10 +48,10 @@ async function initStickers() {
                 const stream = fs.createWriteStream(x.file);
                 await finished(body.pipe(stream));
                 
-                console.log(`initStickers: Sticker file ${x.file} downloaded.`);
+                log(`initStickers: Sticker file ${x.file} downloaded.`);
             } catch (e) {
-                console.error(`initStickers: Failed to download sticker file ${x.file}.`);
-                console.error(e);
+                error(`initStickers: Failed to download sticker file ${x.file}.`);
+                error(e);
             }
         })
     )
@@ -60,10 +61,10 @@ async function reloadStickers() {
     await Promise.all(
         Object.values(config.stickers).map(async x => {
             if (!x.url) {
-                console.error(`reloadStickers: Sticker file ${x.file} not found and no url provided.`);
+                error(`reloadStickers: Sticker file ${x.file} not found and no url provided.`);
                 return;
             }
-            console.log(`reloadStickers: Downloading sticker file ${x.file}.`);
+            log(`reloadStickers: Downloading sticker file ${x.file}.`);
 
             try {
                 const res = await fetch(x.url);
@@ -71,10 +72,10 @@ async function reloadStickers() {
                 const stream = fs.createWriteStream(x.file);
                 await finished(body.pipe(stream));
 
-                console.log(`reloadStickers: Sticker file ${x.file} downloaded.`);
+                log(`reloadStickers: Sticker file ${x.file} downloaded.`);
             } catch (e) {
-                console.error(`reloadStickers: Failed to download sticker file ${x.file}.`);
-                console.error(e);
+                error(`reloadStickers: Failed to download sticker file ${x.file}.`);
+                error(e);
             }
         })
     )

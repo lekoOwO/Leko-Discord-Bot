@@ -23,5 +23,6 @@
             "file": "FILE_NAME_IN_DATA_FOLDER",
             "url": "URL to CSV file used for reload_sticker command, or null if not required to reload."
         }
-    }
+    },
+    "debug": false
 }
