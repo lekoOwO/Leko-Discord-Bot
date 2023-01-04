@@ -33,11 +33,11 @@ function getDbUserInvitesWithIn(userId, channelId, interval){
         log(`[x] getDbUserInvitesWithIn: channel ${channelId} not found for ${userId}.\n${userId}/${channelId}/${interval}`);
         return [];
     }
-    
-    log(`[v] getDbUserInvitesWithIn: user ${userId} has ${discordInvite[userId][channelId].length} invites.` +
-        `Target Date: ${(Date.now() - interval)}` +
-        `Filtered Invites: ${discordInvite[userId][channelId].filter(x => x.createdAt > (Date.now() - interval)).length}` + 
-        `\n${userId}/${channelId}/${interval}`
+
+    log(`[v] getDbUserInvitesWithIn: user ${userId} has ${discordInvite[userId][channelId].length} invites.\n` +
+        `Target Date: ${(Date.now() - interval)}\n` +
+        `Filtered Invites: ${discordInvite[userId][channelId].filter(x => x.createdAt > (Date.now() - interval)).length}\n` + 
+        `${userId}/${channelId}/${interval}`
     )
 
     return discordInvite[userId][channelId].filter(x => x.createdAt > (Date.now() - interval));
